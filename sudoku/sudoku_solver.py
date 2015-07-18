@@ -3,47 +3,55 @@ The Looping Sudoku Problem Formulation for the PuLP Modeller
 
 Authors: Antony Phillips, Dr Stuart Mitcehll
 """
+
 # Import PuLP modeler functions
 from pulp import LpProblem, LpMinimize, LpVariable, LpInteger, lpSum, LpStatus, value
 
-# A list of number from 1 to 9 is created
-sequence = range(1, 10)
+COLUMN_SEPARATOR = "| "
 
-# The vals, rows and cols sequences all follow this form
-vals = sequence
-rows = sequence
-columns = sequence
+ROW_SEPARATOR = "+-------+-------+-------+\n"
 
-# The boxes list is created, with the row and column index of each square in each box
-boxes = []
-for i in range(3):
-    for j in range(3):
-        boxes += [[(rows[3 * i + k], columns[3 * j + l]) for k in range(3) for l in range(3)]]
 
-# The prob variable is created to contain the problem data
-problem = LpProblem("Sudoku Problem", LpMinimize)
+def build_sudoku_model():
+    # A list of number from 1 to 9 is created
+    sequence = range(1, 10)
 
-# The problem variables are created
-choices = LpVariable.dicts("Choice", (vals, rows, columns), 0, 1, LpInteger)
+    # The vals, rows and cols sequences all follow this form
+    vals = sequence
+    rows = sequence
+    columns = sequence
 
-# The arbitrary objective function is added
-problem += 0, "Arbitrary Objective Function"
+    # The boxes list is created, with the row and column index of each square in each box
+    boxes = []
+    for i in range(3):
+        for j in range(3):
+            box = [(rows[3 * i + k], columns[3 * j + l]) for k in range(3) for l in range(3)]
+            boxes.append(box)
 
-# A constraint ensuring that only one value can be in each square is created
-for r in rows:
-    for c in columns:
-        problem += lpSum(choices[v][r][c] for v in vals) == 1, ""
+    # The prob variable is created to contain the problem data
+    problem = LpProblem("Sudoku Problem", LpMinimize)
+    # The problem variables are created
+    choices = LpVariable.dicts("Choice", (vals, rows, columns), 0, 1, LpInteger)
+    # The arbitrary objective function is added
+    problem += 0, "Arbitrary Objective Function"
 
-# The row, column and box constraints are added for each value
-for v in vals:
+    # A constraint ensuring that only one value can be in each square is created
     for r in rows:
-        problem += lpSum(choices[v][r][c] for c in columns) == 1, ""
+        for c in columns:
+            problem += lpSum(choices[v][r][c] for v in vals) == 1, ""
 
-    for c in columns:
-        problem += lpSum(choices[v][r][c] for r in rows) == 1, ""
+    # The row, column and box constraints are added for each value
+    for v in vals:
+        for r in rows:
+            problem += lpSum(choices[v][r][c] for c in columns) == 1, ""
 
-    for b in boxes:
-        problem += lpSum(choices[v][r][c] for (r, c) in b) == 1, ""
+        for c in columns:
+            problem += lpSum(choices[v][r][c] for r in rows) == 1, ""
+
+        for b in boxes:
+            problem += lpSum(choices[v][r][c] for (r, c) in b) == 1, ""
+
+    return problem, choices, vals, rows, columns
 
 
 def fill_example_sudoku(problem, choices):
@@ -80,40 +88,49 @@ def fill_example_sudoku(problem, choices):
     return problem
 
 
-problem = fill_example_sudoku(problem, choices)
+def write_solution_to_file(problem, choices, vals, rows, columns):
+    # The problem data is written to an .lp file
+    problem.writeLP("Sudoku.lp")
 
-# The problem data is written to an .lp file
-problem.writeLP("Sudoku.lp")
+    # A file called sudokuout.txt is created/overwritten for writing to
+    sudoku_output = 'sudokuout.txt'
+    with open(sudoku_output, 'w') as sudokuout:
 
-# A file called sudokuout.txt is created/overwritten for writing to
-with open('sudokuout.txt', 'w') as sudokuout:
+        while True:
+            problem.solve()
+            # The status of the solution is printed to the screen
+            print("Status:", LpStatus[problem.status])
+            # The solution is printed if it was deemed "optimal" i.e met the
+            # constraints
+            if LpStatus[problem.status] == "Optimal":
+                # The solution is written to the sudokuout.txt file
+                for r in rows:
+                    if r == 1 or r == 4 or r == 7:
+                        sudokuout.write(ROW_SEPARATOR)
+                    for c in columns:
+                        for v in vals:
+                            if value(choices[v][r][c]) == 1:
+                                if c == 1 or c == 4 or c == 7:
+                                    sudokuout.write(COLUMN_SEPARATOR)
+                                sudokuout.write("{} ".format(v))
+                                if c == 9:
+                                    sudokuout.write(COLUMN_SEPARATOR + "\n")
+                sudokuout.write(ROW_SEPARATOR)
+                # The constraint is added that the same solution cannot be returned again
+                problem += lpSum(choices[v][r][c] for v in vals for r in rows for c in columns if value(choices[v][r][c]) == 1) <= 80
+            # If a new optimal solution cannot be found, we end the program
+            else:
+                break
 
-    while True:
-        problem.solve()
-        # The status of the solution is printed to the screen
-        print("Status:", LpStatus[problem.status])
-        # The solution is printed if it was deemed "optimal" i.e met the
-        # constraints
-        if LpStatus[problem.status] == "Optimal":
-            # The solution is written to the sudokuout.txt file
-            for r in rows:
-                if r == 1 or r == 4 or r == 7:
-                    sudokuout.write("+-------+-------+-------+\n")
-                for c in columns:
-                    for v in vals:
-                        if value(choices[v][r][c]) == 1:
-                            if c == 1 or c == 4 or c == 7:
-                                sudokuout.write("| ")
-                            sudokuout.write("{} ".format(v))
-                            if c == 9:
-                                sudokuout.write("|\n")
-            sudokuout.write("+-------+-------+-------+\n\n")
-            # The constraint is added that the same solution cannot be returned
-            # again
-            problem += lpSum([choices[v][r][c] for v in vals for r in rows for c in columns if value(choices[v][r][c]) == 1]) <= 80
-        # If a new optimal solution cannot be found, we end the program
-        else:
-            break
+    # The location of the solutions is give to the user
+    print("Solutions Written to {}".format(sudoku_output))
 
-# The location of the solutions is give to the user
-print("Solutions Written to sudokuout.txt")
+
+def main():
+    problem, choices, vals, rows, columns = build_sudoku_model()
+    problem = fill_example_sudoku(problem, choices)
+    write_solution_to_file(problem, choices, vals, rows, columns)
+
+
+if __name__ == '__main__':
+    main()
