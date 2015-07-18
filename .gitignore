@@ -55,3 +55,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Pycharm
+.idea
+
+# sudoku
+sudoku/sudokuout.txt
+sudoku/Sudoku.lp
