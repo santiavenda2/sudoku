@@ -100,8 +100,7 @@ def write_solution_to_file(problem, choices, vals, rows, columns):
             problem.solve()
             # The status of the solution is printed to the screen
             print("Status:", LpStatus[problem.status])
-            # The solution is printed if it was deemed "optimal" i.e met the
-            # constraints
+            # The solution is printed if it was deemed "optimal" i.e met the constraints
             if LpStatus[problem.status] == "Optimal":
                 # The solution is written to the sudokuout.txt file
                 for r in rows:

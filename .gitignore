@@ -60,5 +60,5 @@ target/
 .idea
 
 # sudoku
-sudoku/sudokuout.txt
-sudoku/Sudoku.lp
+sudoku_pulp/sudokuout.txt
+sudoku_pulp/Sudoku.lp
