@@ -29,69 +29,68 @@ def build_sudoku_problem():
     # The problem variable is created to contain the problem data
     problem = LpProblem("Sudoku Problem", LpMinimize)
     # The problem variables are created
-    choices = LpVariable.dicts("Choice", (values,rows, columns), 0, 1, LpBinary)
+    choices = LpVariable.dicts("Choice", (rows, columns, values), 0, 1, LpBinary)
     # The arbitrary objective function is added
     problem += 0, "Arbitrary Objective Function"
 
     # A constraint ensuring that only one value can be in each square is created
     for r in rows:
         for c in columns:
-            problem += lpSum(choices[v][r][c] for v in values) == 1, ""
+            problem += lpSum(choices[r][c][v] for v in values) == 1, ""
 
     # The row, column and box constraints are added for each value
     for v in values:
         for r in rows:
-            problem += lpSum(choices[v][r][c] for c in columns) == 1, ""
+            problem += lpSum(choices[r][c][v] for c in columns) == 1, ""
 
         for c in columns:
-            problem += lpSum(choices[v][r][c] for r in rows) == 1, ""
+            problem += lpSum(choices[r][c][v] for r in rows) == 1, ""
 
         for b in boxes:
-            problem += lpSum(choices[v][r][c] for (r, c) in b) == 1, ""
+            problem += lpSum(choices[r][c][v] for (r, c) in b) == 1, ""
 
     return problem, choices, values, rows, columns
 
 
 def fill_example_sudoku(problem, choices):
     # The starting numbers are entered as constraints
-    problem += choices[5][1][1] == 1, ""
-    problem += choices[6][2][1] == 1, ""
-    problem += choices[8][4][1] == 1, ""
-    problem += choices[4][5][1] == 1, ""
-    problem += choices[7][6][1] == 1, ""
-    problem += choices[3][1][2] == 1, ""
-    problem += choices[9][3][2] == 1, ""
-    problem += choices[6][7][2] == 1, ""
-    problem += choices[8][3][3] == 1, ""
-    problem += choices[1][2][4] == 1, ""
-    problem += choices[8][5][4] == 1, ""
-    problem += choices[4][8][4] == 1, ""
-    problem += choices[7][1][5] == 1, ""
-    problem += choices[9][2][5] == 1, ""
-    problem += choices[6][4][5] == 1, ""
-    problem += choices[2][6][5] == 1, ""
-    problem += choices[1][8][5] == 1, ""
+    problem += choices[1][1][5] == 1, ""
+    problem += choices[2][1][6] == 1, ""
+    problem += choices[4][1][8] == 1, ""
+    problem += choices[5][1][4] == 1, ""
+    problem += choices[6][1][7] == 1, ""
+    problem += choices[1][2][3] == 1, ""
+    problem += choices[3][2][9] == 1, ""
+    problem += choices[7][2][6] == 1, ""
+    problem += choices[3][3][8] == 1, ""
+    problem += choices[2][4][1] == 1, ""
+    problem += choices[5][4][8] == 1, ""
+    problem += choices[8][4][4] == 1, ""
+    problem += choices[1][5][7] == 1, ""
+    problem += choices[2][5][9] == 1, ""
+    problem += choices[4][5][6] == 1, ""
+    problem += choices[6][5][2] == 1, ""
+    problem += choices[8][5][1] == 1, ""
+    problem += choices[9][5][8] == 1, ""
+    problem += choices[6][5][2] == 1, ""
+    problem += choices[5][6][3] == 1, ""
+    problem += choices[8][6][9] == 1, ""
+    problem += choices[7][7][2] == 1, ""
+    problem += choices[3][8][6] == 1, ""
+    problem += choices[7][8][8] == 1, ""
+    problem += choices[9][8][7] == 1, ""
+    problem += choices[4][9][3] == 1, ""
+    problem += choices[5][9][1] == 1, ""
+    problem += choices[6][9][6] == 1, ""
     problem += choices[8][9][5] == 1, ""
-    problem += choices[5][2][6] == 1, ""
-    problem += choices[3][5][6] == 1, ""
-    problem += choices[9][8][6] == 1, ""
-    problem += choices[2][7][7] == 1, ""
-    problem += choices[6][3][8] == 1, ""
-    problem += choices[8][7][8] == 1, ""
-    problem += choices[7][9][8] == 1, ""
-    problem += choices[3][4][9] == 1, ""
-    problem += choices[1][5][9] == 1, ""
-    problem += choices[6][6][9] == 1, ""
-    problem += choices[5][8][9] == 1, ""
-    # return problem
 
 
 def write_solution_to_file(problem, choices, vals, rows, columns):
     # The problem data is written to an .lp file
     problem.writeLP("Sudoku.lp")
 
-    # A file called output_file.txt is created/overwritten for writing to
-    sudoku_output_filename = 'output_file.txt'
+    # A file called pulp_output.txt is created/overwritten for writing to
+    sudoku_output_filename = 'pulp_output.txt'
     with open(sudoku_output_filename, 'w') as output_file:
 
         while True:
@@ -103,7 +102,7 @@ def write_solution_to_file(problem, choices, vals, rows, columns):
                 # The solution is written to the output_file.txt file
                 write_solution(choices, vals, rows, columns, output_file)
                 # The constraint is added that the same solution cannot be returned again
-                problem += lpSum(choices[v][r][c] for v in vals for r in rows for c in columns if value(choices[v][r][c]) == 1) <= 80
+                problem += lpSum(choices[r][c][v] for r in rows for c in columns for v in vals if value(choices[r][c][v]) == 1) <= 80
 
             else:
                 # If a new optimal solution cannot be found, we end the program
@@ -121,8 +120,9 @@ def write_solution(choices, vals, rows, columns, output_file):
             if c == 1 or c == 4 or c == 7:
                 output_file.write(COLUMN_SEPARATOR)
             for v in vals:
-                if value(choices[v][r][c]) == 1:
+                if value(choices[r][c][v]) == 1:
                     output_file.write("{} ".format(v))
+                    break
             if c == 9:
                 output_file.write(COLUMN_SEPARATOR + "\n")
     output_file.write(ROW_SEPARATOR)
