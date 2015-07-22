@@ -17,8 +17,14 @@ Solvers
 * `Gurobi <http://www.gurobi.com/>`_ 
 * `CLP <http://www.coin-or.org/>`_ 
 * `CPLEX <http://www.cplex.com/>`_ 
-  `SCIP <http://scip.zib.de/>`_ 
+* `SCIP <http://scip.zib.de/>`_ 
 
+SAT-Solvers
+-----------
+
+* `MiniSAT <http://minisat.se/>`_  (using satispy)
+* `PicoSAT <http://fmv.jku.at/picosat/>`_ (using Pycosat)
+* 
   
 
 
