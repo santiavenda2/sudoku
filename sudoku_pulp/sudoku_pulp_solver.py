@@ -5,7 +5,7 @@ Authors: Antony Phillips, Dr Stuart Mitcehll
 """
 
 from sudoku import model
-from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, value, LpBinary
+from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, value, LpBinary, solvers
 
 def build_sudoku_problem():
 
@@ -56,6 +56,12 @@ def fill_example_sudoku(problem, choices, sudoku_table):
 def solve_sudoku(problem, choices):
     while True:
         problem.solve()
+        # problem.solve(solver=solvers.PULP_CBC_CMD())   # Default solver
+        # problem.solve(solver=solvers.COIN())
+        # problem.solve(solver=solvers.GLPK())
+        # problem.solve(solver=solvers.GUROBI())
+        # problem.solve(solver=solvers.GUROBI_CMD())
+        # problem.solve(solver=solvers.CPLEX())
         if LpStatus[problem.status] == "Optimal":
             sudoku_table_solution = get_solution(choices)
             problem += lpSum(choices[r][c][v] for r in xrange(9) for c in xrange(9) for v in xrange(9)
