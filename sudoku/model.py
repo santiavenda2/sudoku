@@ -1,7 +1,10 @@
 
 from UserDict import IterableUserDict
 
-class Sudoku(IterableUserDict):
+EMPTY_CELL_CHARACTER = '.'
+
+
+class SudokuTable(IterableUserDict):
 
     COLUMN_SEPARATOR = "| "
 
@@ -10,8 +13,13 @@ class Sudoku(IterableUserDict):
     def read_from_line(self, line):
         assert len(line) == 81
         for i, v in enumerate(line):
-            if v != '.':
+            if v != EMPTY_CELL_CHARACTER:
                 self[(i / 9, i % 9)] = int(v)
+
+    def write_to_line(self):
+        line = "".join(str(self.data[(i, j)]) if (i, j) in self.data else EMPTY_CELL_CHARACTER
+                       for i in range(9) for j in range(9))
+        return line
 
     def __setitem__(self, position, value):
         self.data[position] = value
@@ -51,8 +59,13 @@ class Sudoku(IterableUserDict):
 
 def main():
     example_line = ".94...13..............76..2.8..1.....32.........2...6.....5.4.......8..7..63.4..8"
-    sudoku_example = Sudoku()
+    sudoku_example = SudokuTable()
     sudoku_example.read_from_line(line=example_line)
+    write_line = sudoku_example.write_to_line()
+    print example_line
+    print write_line
+
+    assert write_line == example_line
     print (0, 1) in sudoku_example
     print sudoku_example.values()
     print sudoku_example.keys()
