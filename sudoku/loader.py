@@ -1,6 +1,7 @@
 
+from UserDict import IterableUserDict
 
-class Sudoku(dict):
+class Sudoku(IterableUserDict):
 
     COLUMN_SEPARATOR = "| "
 
@@ -13,40 +14,22 @@ class Sudoku(dict):
                 self[(i / 9, i % 9)] = int(v)
 
     def __setitem__(self, position, value):
-        self.__dict__[position] = value
+        self.data[position] = value
 
     def __getitem__(self, position):
-        return self.__dict__[position]
-
-    def __repr__(self):
-        return repr(self.__dict__)
-
-    def __len__(self):
-        return len(self.__dict__)
+        return self.data[position]
 
     def __delitem__(self, position):
-        del self.__dict__[position]
+        del self.data[position]
 
-    def keys(self):
-        return self.__dict__.keys()
-
-    def values(self):
-        return self.__dict__.values()
-
-    def __cmp__(self, dict):
-        return cmp(self.__dict__, dict)
-
-    def __contains__(self, position):
-        return position in self.__dict__
-
-    def add(self, position, value):
-        self.__dict__[position] = value
+    def __len__(self):
+        return len(self.data)
 
     def __iter__(self):
-        return self.__dict__.__iter__()
+        return iter(self.data)
 
-    def __call__(self):
-        return self.__dict__
+    def __repr__(self):
+        return repr(self.data)
 
     def __str__(self):
         sudoku_str = ""
@@ -56,16 +39,14 @@ class Sudoku(dict):
             for c in range(9):
                 if c == 0 or c == 3 or c == 6:
                     sudoku_str += self.COLUMN_SEPARATOR
-
-                if (r,c) in self.__dict__:
-                    sudoku_str += "{} ".format(self.__dict__[(r, c)])
+                if (r, c) in self.data:
+                    sudoku_str += "{} ".format(self.data[(r, c)])
                 else:
                     sudoku_str += "  "
                 if c == 8:
                     sudoku_str += self.COLUMN_SEPARATOR + "\n"
         sudoku_str += self.ROW_SEPARATOR
         return sudoku_str
-
 
 
 def main():
@@ -76,6 +57,8 @@ def main():
     print sudoku_example.values()
     print sudoku_example.keys()
     print list(sudoku_example.iteritems())
+    print sudoku_example
+
 
 if __name__ == '__main__':
     main()
