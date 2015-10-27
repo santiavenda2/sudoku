@@ -23,8 +23,7 @@ SAT-Solvers
 -----------
 
 * `MiniSAT <http://minisat.se/>`_  (using satispy)
-* `PicoSAT <http://fmv.jku.at/picosat/>`_ (using Pycosat)
-* 
+* `PicoSAT <http://fmv.jku.at/picosat/>`_ (using Pycosat) 
   
 
 
