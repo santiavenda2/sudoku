@@ -88,9 +88,8 @@ def solve(grid):
             grid[i - 1][j - 1] = read_cell(i, j)
 
 
-if __name__ == '__main__':
+def main():
     from pprint import pprint
-
     # hard Sudoku problem, see Fig. 3 in paper by Weber
     hard = [[0, 2, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 6, 0, 0, 0, 0, 3],
@@ -112,3 +111,7 @@ if __name__ == '__main__':
             [2, 6, 9, 3, 1, 4, 7, 8, 5],
             [5, 4, 8, 7, 6, 9, 2, 3, 1],
             [7, 3, 1, 8, 5, 2, 6, 4, 9]] == hard
+
+
+if __name__ == '__main__':
+    main()
