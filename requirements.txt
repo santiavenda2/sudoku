@@ -1,5 +1,5 @@
 PuLP==1.6.0
-Pyomo==4.1.10519
+Pyomo==5.6.8
 Numberjack==1.1.1
 pycosat==0.6.0
 satispy==1.0
